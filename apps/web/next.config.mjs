@@ -22,5 +22,14 @@ const config = {
   },
   swcMinify: true,
   output: "standalone",
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "https://prisma-editor.vercel.app/",
+        permanent: true,
+      },
+    ];
+  },
 };
 export default config;
