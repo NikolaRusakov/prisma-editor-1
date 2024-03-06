@@ -1,7 +1,7 @@
-FROM --platform=linux/amd64 node:16-alpine3.17 AS base
-RUN apk add --no-cache libc6-compat openssl1.1-compat
+FROM --platform=linux/amd64 node:hydrogen-alpine3.19 AS base
+RUN apk add --no-cache libc6-compat openssl
 RUN apk update
-RUN npm install -g turbo pnpm
+RUN npm install -g turbo pnpm next
 
 
 FROM base AS builder
@@ -9,6 +9,14 @@ WORKDIR /app
 COPY . .
 RUN turbo prune --scope=@prisma-editor/web --docker
 
+# SHELL ["/bin/bash", "-c"]
+# ENV BASH_ENV ~/.bashrc
+# ENV VOLTA_HOME /root/.volta
+# ENV PATH $VOLTA_HOME/bin:$PATH
+# ARG VOLTA_FEATURE_PNPM=1
+
+# RUN curl https://get.volta.sh | bash
+# RUN volta install pnpm
 
 FROM base AS installer
 ARG SKIP_ENV_VALIDATION=true
@@ -20,6 +28,8 @@ RUN pnpm install
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 RUN pnpm web postinstall
+
+RUN next telemetry disable
 RUN pnpm turbo run build --filter=@prisma-editor/web
 CMD [ "pnpm","start" ] 
 
